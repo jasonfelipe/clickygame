@@ -5,7 +5,7 @@ import "./Navbar.css";
 const Navbar = props => (
   <nav className="navbar navbar-expand-lg navbar-light bg-light">
     <div>
-      Current Score: 0
+      Current Score: {props.score}
     </div>
   </nav>
 );
