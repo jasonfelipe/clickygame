@@ -5,9 +5,8 @@ import Logo from "../sflogo.gif"
 import Jumbotron from "../components/Jumbotron";
 import Container from "../components/Container";
 import Row from "../components/Row";
-import Col from "../components/Col";
-import ImageRow from "../components/ImageRow"
-import Navbar from "../components/Navbar";
+import Scorebar from "../components/Scorebar";
+import Modal from '../components/Modal';
 
 //CSS sheet
 import './game.css';
@@ -18,10 +17,25 @@ import './game.css';
 import Shuffled from "../utils/Shuffled";
 
 class Game extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            show: false,
+            imagesArray: [],
+            score: 0,
+            highScore: 0,
+            currentImage: "",
 
-    state = {
-        imagesArray: [],
-        score: 0,
+        };
+
+    }
+
+
+    showModal = () => {
+        this.setState({ show: true });
+    };
+    hideModal = () => {
+        this.setState({ show: false });
     };
 
     //Once the page loads it goes and puts in our images.
@@ -39,30 +53,76 @@ class Game extends Component {
             const j = Math.floor(Math.random() * (i + 1));
             [Images[i], Images[j]] = [Images[j], Images[i]];
         }
-        return this.setState({imagesArray: Images});
+        return this.setState({ imagesArray: Images });
     }
 
-    handleScore = () => {
-        this.setState({
-            score: this.state.score + 1
-        });
-        this.shuffleAgain()
+    handleScore = event => {
+        event.preventDefault();
+        if (this.state.currentImage === event.target.src) {
+            this.showModal();
+            if (this.state.highScore > this.state.score) {
+                this.setState({
+                    score: 0,
+                    currentImage: ""
+                })
+            }
+            else {
+                this.setState({
+                    highScore: this.state.score,
+                    score: 0,
+                    currentImage: ""
+                })
+            }
+        }
+        else {
+            this.setState({
+                score: this.state.score + 1,
+                currentImage: event.target.src
+            });
+            this.shuffleAgain()
+        }
     };
 
     render() {
         return (
             <div>
                 <Jumbotron>
-                    <img className='logo' src={Logo} alt='logo'/>
+                    <img className='logo' src={Logo} alt='logo' />
                     <h2 className='text-center'>Clicky Game!</h2>
                     <h4 className='text-center'>Click on the characters to score points!</h4>
                     <h4 className='text-center'>Don't click on the same character or the game is over!</h4>
                 </Jumbotron>
-                <Navbar score={this.state.score} />
                 <Container>
                     <Row>
-                        <ImageRow onClick={this.handleScore} images={this.state.imagesArray} />
+                        <Scorebar highScore={this.state.highScore} score={this.state.score} />
+                        <div className='table'>
+                            <ul id='horizontal-list'>
+                                {this.state.imagesArray.map((result, index) => {
+                                    let button = <button><img value={result} alt='character' src={result} className='img-fluid' onClick={this.handleScore} /></button>
+                                    return <li key={index}>
+                                        {button}
+                                    </li>
+                                })}
+                            </ul>
+                        </div>
                     </Row>
+
+                    <Modal show={this.state.show}>
+                        <div className='modal-content'>
+                            <div className='modal-header'>
+                                <h3 className='modal-title'>YOU LOSE</h3>
+                            </div>
+
+                            <div className='modal-body'>
+                                <p>TRY AGAIN BUDDY!</p>
+                            </div>
+
+                            <div className='modal-footer'>
+                                <button className='btn btn-danger' onClick={this.hideModal}>Close</button>
+                            </div>
+                        </div>
+
+                    </Modal>
                 </Container>
             </div>
         )
